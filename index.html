@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduSignal — Clickable Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+:root{
+  --navy:#0D1B36; --navy2:#16284B; --ink:#14213D; --muted:#4A5568; --line:#E1E6ED;
+  --bg:#F2F4F7; --teal:#0B6A63; --teal-d:#084C47; --lime:#C8F26B;
+  --red-bg:#FDECEA; --red:#A0281C; --amb-bg:#FFF4DB; --amb:#7A4F00; --grn-bg:#E6F4EC; --grn:#146C43;
+  --mach-bg:#E5EDFF; --mach:#1E3A8A; --hum-bg:#FFEDD5; --hum:#8A2E0C;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45}
+button,select,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+:focus-visible{outline:2px solid #1D4ED8;outline-offset:2px}
+h1,h2,h3{font-family:'Space Grotesk',Inter,sans-serif;margin:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* top bar */
+.top{background:var(--navy);color:#fff;padding:12px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+.brand{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-family:'Space Grotesk';font-size:22px;font-weight:700}
+.dots{display:flex;gap:4px}.dots i{width:9px;height:9px;border-radius:50%;display:block}
+.badge{font-size:12px;background:var(--navy2);color:#DCE4F2;padding:4px 10px;border-radius:999px;font-family:Inter;font-weight:500}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{background:transparent;color:#fff;border:1px solid #3B4F78;border-radius:10px;padding:10px 14px;font-weight:600;min-height:44px}
+.tab[aria-pressed="true"]{background:#fff;color:var(--navy);border-color:#fff}
+
+main{max-width:1180px;margin:0 auto;padding:24px}
+.view{display:none}.view.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{background:#fff;border:1px solid #D5DBE3;border-radius:14px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.p-red{background:var(--red-bg);color:var(--red)}.p-yellow{background:var(--amb-bg);color:var(--amb)}.p-green{background:var(--grn-bg);color:var(--grn)}
+.btn{background:var(--teal);color:#fff;border:1px solid var(--teal);border-radius:10px;padding:10px 16px;font-weight:600;min-height:44px}
+.btn:hover:not(:disabled){background:var(--teal-d)}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid #A9B4C4;border-radius:10px;padding:10px 14px;font-weight:600;min-height:44px;text-align:left}
+.btn-ghost[aria-pressed="true"]{background:var(--teal);color:#fff;border-color:var(--teal)}
+.link{background:none;border:0;color:var(--teal);font-weight:600;padding:10px 0;min-height:44px}
+
+/* dashboard */
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px}
+.head h1{font-size:28px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.stat{padding:16px 18px;display:flex;flex-direction:column;gap:4px;text-align:left;border:2px solid transparent}
+.stat[aria-pressed="true"]{border-color:var(--teal)}
+.stat b{font-family:'Space Grotesk';font-size:34px;line-height:1}
+.tablebox{overflow-x:auto;position:relative}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:12px 18px;border-bottom:1px solid var(--line)}
+td{padding:14px 18px;border-bottom:1px solid #EEF1F5;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr.row:hover td{background:#F8FAFC}
+.who b{display:block}
+.note{margin-top:14px}
+
+/* student detail */
+.grid2{display:flex;flex-wrap:wrap;gap:18px}
+.grid2>.card{flex:1 1 400px;min-width:0;padding:22px;display:flex;flex-direction:column;gap:14px}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 8px;border-radius:4px}
+.t-m{background:var(--mach-bg);color:var(--mach)}.t-h{background:var(--hum-bg);color:var(--hum)}
+.t-sim{background:#EDE9FE;color:#4C1D95}
+.reasons{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.reasons li{display:flex;gap:10px;align-items:flex-start;background:#F8FAFC;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.spark{display:flex;align-items:flex-end;gap:3px;height:34px;margin-left:auto;flex-shrink:0}
+.spark i{display:block;width:7px;border-radius:2px;background:#9AA8BC}
+.spark i:last-child{background:var(--red)}
+.teacher{background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:12px}
+.blind{background:#F2F4F7;border-radius:10px;padding:12px;font-size:14px}
+.optout{background:#FFF4DB;border:1px solid #F5D78E;color:#5C3B00;border-radius:10px;padding:12px;font-size:14px}
+.choices{display:flex;flex-direction:column;gap:8px}
+label.lbl{font-weight:600;font-size:14px;display:block;margin-bottom:6px}
+select,textarea{width:100%;padding:10px;border:1px solid #A9B4C4;border-radius:10px;background:#fff;color:var(--ink)}
+select{min-height:44px}
+textarea{resize:vertical;min-height:120px}
+.row2{display:flex;gap:12px;flex-wrap:wrap}.row2>div{flex:1 1 180px}
+.ok{background:var(--grn-bg);border:1px solid #A7D7BC;color:#0F5132;border-radius:10px;padding:12px}
+.hidden{display:none !important}
+
+/* student view */
+.phone-wrap{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;justify-content:center}
+.phone{width:380px;max-width:100%;background:#0B1424;border-radius:40px;padding:12px;box-shadow:0 20px 50px rgba(13,27,54,.25)}
+.screen{background:#F6F8FB;border-radius:30px;overflow:hidden;min-height:720px;display:flex;flex-direction:column}
+.s-head{background:var(--navy);color:#fff;padding:20px 20px 20px}
+.s-head h2{font-size:24px}
+.langs{display:flex;gap:4px;margin-bottom:14px}
+.langs button{background:transparent;color:#DCE4F2;border:1px solid #3B4F78;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;min-height:36px}
+.langs button[aria-pressed="true"]{background:var(--lime);color:var(--navy);border-color:var(--lime)}
+.s-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+.s-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.bar{height:10px;background:#E1E6ED;border-radius:999px;overflow:hidden}.bar i{display:block;height:100%;border-radius:999px}
+.msg{background:#EAF6F4;border-radius:14px 14px 14px 4px;padding:12px;white-space:pre-line}
+.offer{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid #EEF1F5;padding-top:10px}
+.offer:first-of-type{border-top:0;padding-top:0}
+.offer .btn,.offer .done{padding:8px 12px;min-height:44px;font-size:14px;border-radius:10px;flex-shrink:0}
+.done{background:var(--grn-bg);color:#0F5132;border:1px solid #A7D7BC;font-weight:600}
+.switchrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.switch{width:52px;height:30px;border-radius:999px;border:0;background:#A9B4C4;position:relative;flex-shrink:0;padding:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s}
+.switch[aria-checked="true"]{background:var(--teal)}
+.switch[aria-checked="true"]::after{left:25px}
+details.data summary{font-weight:600;cursor:pointer;min-height:28px;list-style-position:inside}
+details.data p{margin:8px 0 0;font-size:13px}
+.explain{flex:1 1 300px;max-width:420px;display:flex;flex-direction:column;gap:12px}
+.explain .card{padding:18px}
+
+/* fairness */
+.simbanner{background:#EDE9FE;border:1px solid #C4B5FD;color:#3B0764;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:14px}
+.fair table{min-width:640px}
+.fair td.num{font-variant-numeric:tabular-nums}
+.grp td{background:#F8FAFC;font-weight:700;font-size:13px;padding:8px 18px}
+.gap{display:inline-block;font-size:12px;font-weight:700;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--red-bg);color:var(--red)}
+.findings{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px}
+.findings .card{flex:1 1 320px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.findings p{margin:0}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;z-index:10}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* guide strip */
+.guide{background:var(--lime);color:var(--navy);padding:8px 24px;font-size:14px;font-weight:600;text-align:center}
+
+@media (max-width:700px){
+  .stats{grid-template-columns:1fr}
+  main{padding:16px}
+  .top{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="dots" aria-hidden="true"><i style="background:#FF6B5B"></i><i style="background:#FFC24B"></i><i style="background:#43D49B"></i></span>
+    EduSignal
+    <span class="badge">Prototype · sample data · indicator simulated</span>
+  </div>
+  <nav class="tabs" aria-label="Views">
+    <button class="tab" data-go="dash" aria-pressed="true">Advisor dashboard</button>
+    <button class="tab" data-go="student" aria-pressed="false">Student app (Aruzhan)</button>
+    <button class="tab" data-go="fair" aria-pressed="false">Fairness check</button>
+  </nav>
+</header>
+<div class="guide" id="guide">Demo: open a flagged student → choose an action → approve → see it in the Student app → check Fairness.</div>
+
+<main>
+  <!-- DASHBOARD -->
+  <section class="view on" id="v-dash" aria-labelledby="dash-h">
+    <div class="head">
+      <div>
+        <h1 id="dash-h">This week's signals</h1>
+        <div class="muted">Week 6 · Advisor view · first-year groups · updated Monday 08:00</div>
+      </div>
+    </div>
+    <div class="stats" role="group" aria-label="Filter students">
+      <button class="card stat" data-filter="red" aria-pressed="true"><span class="pill p-red">Needs attention</span><b id="c-red">0</b><span class="small muted">students to review</span></button>
+      <button class="card stat" data-filter="yellow" aria-pressed="false"><span class="pill p-yellow">Watch</span><b id="c-yellow">0</b><span class="small muted">keep an eye on</span></button>
+      <button class="card stat" data-filter="all" aria-pressed="false"><span class="pill p-green">All students</span><b id="c-all">0</b><span class="small muted">in this sample</span></button>
+    </div>
+    <div class="card tablebox">
+      <table>
+        <thead><tr><th>Student</th><th>Status</th><th>Why flagged</th><th>Last action</th><th><span class="sr-only">Open</span></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="small muted note"><span class="tag t-m">MACHINE</span> suggests · <span class="tag t-h">HUMAN</span> decides. Every flag is reviewed by an advisor before anything reaches a student.</p>
+  </section>
+
+  <!-- DETAIL -->
+  <section class="view" id="v-detail" aria-labelledby="det-name">
+    <button class="link" data-go="dash">← Back to dashboard</button>
+    <div class="grid2">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+          <div><h1 id="det-name" style="font-size:28px">—</h1><div class="muted" id="det-group">—</div></div>
+          <span id="det-pill" class="pill">—</span>
+        </div>
+        <div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span class="tag t-m">MACHINE</span><b>Why this student was flagged</b></div>
+          <ul class="reasons" id="det-reasons"></ul>
+        </div>
+        <div class="teacher" id="det-teacher">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="tag t-h">HUMAN</span><b class="small">Teacher note</b></div>
+          <div id="det-note"></div>
+        </div>
+        <div class="blind"><b>What the data cannot see:</b> illness, family situation, work shifts, unstable home internet. Check context before acting.</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:center"><span class="tag t-h">HUMAN</span><h2 style="font-size:20px">Advisor decision</h2></div>
+        <div class="optout hidden" id="optout" role="status"></div>
+        <div class="choices" role="group" aria-label="Choose an action">
+          <button class="btn-ghost" data-dec="none" aria-pressed="false">False alarm: no action needed</button>
+          <button class="btn-ghost" data-dec="message" aria-pressed="false">Send a supportive message</button>
+          <button class="btn-ghost" data-dec="meet" aria-pressed="false">Invite to a consultation</button>
+          <button class="btn-ghost" data-dec="refer" aria-pressed="false">Refer to a support service</button>
+        </div>
+        <div id="svc-box" class="hidden">
+          <label class="lbl" for="svc">Support service</label>
+          <select id="svc">
+            <option value="tutor">Peer tutoring</option>
+            <option value="deadline">Flexible deadline</option>
+            <option value="wellbeing">Student wellbeing service</option>
+            <option value="aid">Financial aid office</option>
+          </select>
+        </div>
+        <div id="msg-box" class="hidden">
+          <div style="margin-bottom:10px">
+            <label class="lbl" for="mlang">Message language</label>
+            <select id="mlang">
+              <option value="kk">Kazakh (Қазақша)</option>
+              <option value="ru">Russian (Русский)</option>
+              <option value="en">English</option>
+            </select>
+            <div class="small muted" id="mlang-hint" style="margin-top:4px"></div>
+          </div>
+          <label class="lbl" for="msg">Message to the student (edit before sending)</label>
+          <textarea id="msg"></textarea>
+        </div>
+        <button class="btn hidden" id="approve">Approve and send</button>
+        <div class="ok hidden" id="sent" role="status"></div>
+        <p class="small muted" style="margin:0">Nothing reaches the student without your approval. Flags are never used for grades or discipline.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STUDENT APP -->
+  <section class="view" id="v-student" aria-label="Student app">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="screen" id="screen" lang="kk">
+          <div class="s-head">
+            <div class="langs" role="group" aria-label="App language">
+              <button data-lang="kk" aria-pressed="true">Қаз</button>
+              <button data-lang="ru" aria-pressed="false">Рус</button>
+              <button data-lang="en" aria-pressed="false">Eng</button>
+            </div>
+            <div class="small" style="opacity:.8" data-t="app"></div>
+            <h2 data-t="hi"></h2>
+            <div class="small" style="opacity:.8" data-t="sub"></div>
+          </div>
+          <div class="s-body">
+            <div class="s-card">
+              <b data-t="tasks"></b>
+              <div id="courses" style="display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+            <div class="s-card">
+              <b data-t="fromAdv"></b>
+              <div id="s-msg" class="muted small"></div>
+              <div class="switchrow" style="border-top:1px solid #EEF1F5;padding-top:10px">
+                <span class="small" id="sw-label" data-t="msgToggle"></span>
+                <button class="switch" id="sw" role="switch" aria-checked="true" aria-labelledby="sw-label"></button>
+              </div>
+            </div>
+            <div class="s-card">
+              <b data-t="help"></b>
+              <div id="offers" style="display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+            <div class="s-card">
+              <details class="data">
+                <summary data-t="dataTitle"></summary>
+                <p data-t="used"></p>
+                <p data-t="notUsed"></p>
+                <p class="muted" data-t="who"></p>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="explain">
+        <div class="card"><b>No labels, only support.</b><p class="muted" style="margin:6px 0 0">The student never sees "at risk". They see their progress and offers of help.</p></div>
+        <div class="card"><b>The student decides.</b><p class="muted" style="margin:6px 0 0">Accepting help is always a choice. Messages can be turned off at any time, and the advisor sees that choice.</p></div>
+        <div class="card"><b>In the student's language.</b><p class="muted" style="margin:6px 0 0">The app works in Kazakh, Russian and English. The advisor's message defaults to the language the student chose.</p></div>
+        <div class="card"><b>Open about data.</b><p class="muted" style="margin:6px 0 0">"What data EduSignal uses" lists exactly which signals are read, and which are never used.</p></div>
+        <div class="card"><b>Try it:</b><p class="muted" style="margin:6px 0 0">Switch the language or turn off messages here, then open Aruzhan in the Advisor dashboard.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAIRNESS CHECK -->
+  <section class="view fair" id="v-fair" aria-labelledby="fair-h">
+    <div class="head">
+      <div>
+        <h1 id="fair-h">Fairness check</h1>
+        <div class="muted">End-of-trimester bias audit · does the indicator make more mistakes for some groups?</div>
+      </div>
+      <span class="tag t-sim">SIMULATED · SAMPLE NUMBERS</span>
+    </div>
+    <div class="simbanner"><b>Illustration only.</b> The numbers below are invented to show how the audit would work. A real audit is planned for the pilot, on anonymised data. Group data (school type, language, work) is <b>not an input</b> to the indicator: it is held separately by the data protection officer and used only for this check.</div>
+
+    <div class="card tablebox">
+      <table>
+        <caption class="sr-only">Indicator results by student group, simulated</caption>
+        <thead><tr><th>Group</th><th>Students</th><th>Flagged</th><th>False alarms (of flagged)</th><th>Accepted help (of contacted)</th></tr></thead>
+        <tbody id="fair-rows"></tbody>
+      </table>
+    </div>
+    <p class="small muted note">Rule: a gap of more than 10 percentage points between groups is marked <span class="gap">gap</span> and must be reviewed by people before the next trimester.</p>
+
+    <div class="findings">
+      <div class="card">
+        <div><span class="tag t-m">MACHINE</span> <b>Finding 1: rural students get more false alarms</b></div>
+        <p class="muted">34% of flags for rural-school students were false alarms, against 18% for urban.</p>
+        <div><span class="tag t-h">HUMAN</span> <b>Likely cause and fix</b></div>
+        <p>The "no LMS login" signal penalises students with unstable home internet who download materials on campus. Proposed: lower the weight of logins, add in-class attendance.</p>
+      </div>
+      <div class="card">
+        <div><span class="tag t-m">MACHINE</span> <b>Finding 2: working students accept help less often</b></div>
+        <p class="muted">44% of contacted working students accepted help, against 63% of others.</p>
+        <div><span class="tag t-h">HUMAN</span> <b>Likely cause and fix</b></div>
+        <p>Tutoring is only offered in daytime slots. Proposed: evening and online tutoring, and offer the flexible deadline first.</p>
+      </div>
+      <div class="card">
+        <div><span class="tag t-h">HUMAN</span> <b>Who decides the changes</b></div>
+        <p>Advisors, a student representative and the data protection officer review this report every trimester. Every change to the indicator is logged.</p>
+        <p class="small muted" id="fair-live"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer style="max-width:1180px;margin:0 auto;padding:8px 24px 32px;color:var(--muted);font-size:13px;text-align:center">Developed by students of CSE-2602M: <b style="color:var(--ink)">Nigmatullina Amina · Ayaulym Aslan · Abdimanap Dias · Chingiz Diusembekov</b><br>Astana IT University · Pedagogy of Higher Education · 2026</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const LANG_NAMES = {kk:'Kazakh', ru:'Russian', en:'English'};
+const CYR = {Aruzhan:'Аружан',Dias:'Диас',Madina:'Мадина',Yerlan:'Ерлан',Aigerim:'Айгерим',Timur:'Тимур',Dana:'Дана'};
+const students = [
+  {id:'s1',name:'Aruzhan S.',first:'Aruzhan',group:'CSE-2501',status:'red',lang:'kk',
+   reasons:[['3 missed labs in Programming (weeks 4–6)',[1,1,0,0,0,3]],['2 Programming assignments not submitted',[0,0,0,1,1,2]],['No LMS login for 9 days',[1,1,2,3,6,9]]],
+   note:'Seemed tired and quiet in the last two classes. (Programming teacher)'},
+  {id:'s2',name:'Dias K.',first:'Dias',group:'SE-2503',status:'red',lang:'ru',
+   reasons:[['Calculus quiz average fell from 78% to 41%',[2,2,2,3,4,6]],['Missed the midterm consultation',[0,0,0,0,0,1]]],note:''},
+  {id:'s3',name:'Madina T.',first:'Madina',group:'CSE-2502',status:'red',lang:'kk',
+   reasons:[['Late on 4 of 5 assignments',[0,1,1,2,3,4]],['Attendance 60% in the last two weeks',[1,1,1,2,3,4]]],note:''},
+  {id:'s4',name:'Yerlan B.',first:'Yerlan',group:'IT-2501',status:'yellow',lang:'ru',reasons:[['Attendance dropped from 95% to 70%',[1,1,1,2,2,3]]],note:''},
+  {id:'s5',name:'Aigerim N.',first:'Aigerim',group:'SE-2501',status:'yellow',lang:'en',reasons:[['2 late assignments in Calculus',[0,0,1,1,1,2]]],note:''},
+  {id:'s6',name:'Timur Zh.',first:'Timur',group:'CSE-2503',status:'yellow',lang:'ru',reasons:[['English quiz score down 20 points',[1,1,1,1,2,3]]],note:''},
+  {id:'s7',name:'Dana M.',first:'Dana',group:'IT-2502',status:'green',lang:'kk',reasons:[['No concerns this week',[1,1,1,1,1,1]]],note:''}
+];
+const tone = {red:['Needs attention','p-red'],yellow:['Watch','p-yellow'],green:['On track','p-green']};
+const state = {filter:'red', sel:null, dec:'', sent:{}, dec_log:{}, msgs:{}, req:{}, optOut:false};
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- student-app strings ---------- */
+const T = {
+  en:{app:'EduSignal · My progress',hi:'Hi, Aruzhan',sub:'Week 6 · only you and your advisor see this',
+      tasks:'Tasks completed',fromAdv:'From your advisor',noMsg:'No new messages yet.',
+      msgsOff:'Messages from your advisor are turned off. You can turn them back on at any time.',
+      msgToggle:'Messages from my advisor',help:'Help you can choose',req:'Request',reqd:'Requested',
+      reqToast:'Request sent to support service',offToast:'Messages turned off',onToast:'Messages turned on',
+      dataTitle:'What data EduSignal uses',
+      used:'Used: LMS logins, assignment submissions, attendance, quiz scores.',
+      notUsed:'Never used: gender, region, income, nationality, health.',
+      who:'Only you and your advisor see this. It never affects your grades.',
+      courses:[['Programming','2 assignments still open: tutoring can help you catch up'],['Calculus','On track'],['English','On track']],
+      offers:{tutor:['Peer tutoring: Programming','1 hour a week with a second-year student'],advisor:['Talk to your advisor','15 min, online or in person'],deadline:['Flexible deadline','If work or family takes your time'],wellbeing:['Wellbeing service','Confidential support from a psychologist']}},
+  ru:{app:'EduSignal · Мой прогресс',hi:'Привет, Аружан',sub:'6-я неделя · это видите только вы и ваш эдвайзер',
+      tasks:'Выполненные задания',fromAdv:'От вашего эдвайзера',noMsg:'Новых сообщений нет.',
+      msgsOff:'Сообщения от эдвайзера отключены. Их можно снова включить в любой момент.',
+      msgToggle:'Сообщения от эдвайзера',help:'Помощь на выбор',req:'Запросить',reqd:'Запрошено',
+      reqToast:'Запрос отправлен в службу поддержки',offToast:'Сообщения отключены',onToast:'Сообщения включены',
+      dataTitle:'Какие данные использует EduSignal',
+      used:'Используются: входы в LMS, сдача заданий, посещаемость, результаты тестов.',
+      notUsed:'Никогда не используются: пол, регион, доход, национальность, здоровье.',
+      who:'Это видите только вы и ваш эдвайзер. На оценки это никогда не влияет.',
+      courses:[['Программирование','2 задания ещё открыты: тьютор поможет наверстать'],['Математический анализ','Всё по плану'],['Английский язык','Всё по плану']],
+      offers:{tutor:['Взаимное тьюторство: программирование','1 час в неделю со студентом второго курса'],advisor:['Поговорить с эдвайзером','15 минут, онлайн или лично'],deadline:['Гибкий дедлайн','Если работа или семья отнимают время'],wellbeing:['Психологическая поддержка','Конфиденциальная помощь психолога']}},
+  kk:{app:'EduSignal · Менің үлгерімім',hi:'Сәлем, Аружан',sub:'6-апта · мұны тек сіз бен эдвайзеріңіз көресіз',
+      tasks:'Орындалған тапсырмалар',fromAdv:'Эдвайзеріңізден',noMsg:'Жаңа хабарлама жоқ.',
+      msgsOff:'Эдвайзерден хабарламалар өшірілген. Оларды кез келген уақытта қайта қосуға болады.',
+      msgToggle:'Эдвайзерден хабарламалар',help:'Таңдауға болатын көмек',req:'Сұрау',reqd:'Сұралды',
+      reqToast:'Сұраныс қолдау қызметіне жіберілді',offToast:'Хабарламалар өшірілді',onToast:'Хабарламалар қосылды',
+      dataTitle:'EduSignal қандай деректерді пайдаланады',
+      used:'Пайдаланылады: LMS-ке кіру, тапсырмаларды тапсыру, сабаққа қатысу, тест нәтижелері.',
+      notUsed:'Ешқашан пайдаланылмайды: жынысы, өңірі, табысы, ұлты, денсаулығы.',
+      who:'Мұны тек сіз бен эдвайзеріңіз көресіз. Бағаңызға ешқашан әсер етпейді.',
+      courses:[['Бағдарламалау','2 тапсырма әлі ашық: тьютор көмегімен қуып жетуге болады'],['Математикалық талдау','Жоспар бойынша'],['Ағылшын тілі','Жоспар бойынша']],
+      offers:{tutor:['Тең-тұрғылас тьюторлық: Бағдарламалау','Аптасына 1 сағат, екінші курс студентімен'],advisor:['Эдвайзермен сөйлесу','15 минут, онлайн немесе бетпе-бет'],deadline:['Икемді мерзім','Жұмыс не отбасы уақытыңызды алса'],wellbeing:['Психологиялық қолдау','Психологтың құпия көмегі']}}
+};
+const pct = [55,80,90];
+const offerKeys = ['tutor','advisor','deadline','wellbeing'];
+
+/* ---------- advisor message templates, per language ---------- */
+const SVC = {
+  en:{tutor:'peer tutoring',deadline:'a flexible deadline',wellbeing:'the student wellbeing service',aid:'the financial aid office'},
+  ru:{tutor:'взаимное тьюторство',deadline:'гибкий дедлайн',wellbeing:'служба психологической поддержки',aid:'отдел финансовой помощи'},
+  kk:{tutor:'тең-тұрғылас тьюторлық',deadline:'икемді мерзім',wellbeing:'психологиялық қолдау қызметі',aid:'қаржылық көмек бөлімі'}
+};
+const TPL = {
+  en:{message:(f)=>`Hi ${f}, I noticed the last couple of weeks have been busy. Is everything okay? If anything is getting in the way, I'm happy to help. Reply here or drop by my office any time.`,
+      meet:(f)=>`Hi ${f}, I'd like to check in on how your first year is going. Could we meet for 15 minutes this week? Pick any time that suits you.`,
+      refer:(f,s)=>`Hi ${f}, I think ${s} could make the next few weeks easier. Would you like me to connect you? It's completely your choice.`},
+  ru:{message:(f)=>`Здравствуйте, ${f}! Вижу, последние пару недель были насыщенными. У вас всё в порядке? Если что-то мешает, я с радостью помогу. Ответьте здесь или заходите ко мне в любое время.`,
+      meet:(f)=>`Здравствуйте, ${f}! Хочу узнать, как проходит ваш первый курс. Можем встретиться на 15 минут на этой неделе? Выберите любое удобное время.`,
+      refer:(f,s)=>`Здравствуйте, ${f}! Думаю, «${s}» может облегчить вам следующие недели. Хотите, я помогу связаться? Решать только вам.`},
+  kk:{message:(f)=>`Сәлеметсіз бе, ${f}! Соңғы екі аптада жүктеме көп болған сияқты. Бәрі жақсы ма? Бірдеңе кедергі болса, көмектесуге дайынмын. Осында жауап жазыңыз немесе кабинетіме кез келген уақытта келіңіз.`,
+      meet:(f)=>`Сәлеметсіз бе, ${f}! Бірінші курсыңыз қалай өтіп жатқанын білгім келеді. Осы аптада 15 минутқа кездесе аламыз ба? Өзіңізге ыңғайлы уақытты таңдаңыз.`,
+      refer:(f,s)=>`Сәлеметсіз бе, ${f}! Менің ойымша, «${s}» алдағы апталарды жеңілдетуі мүмкін. Байланыстыруымды қалайсыз ба? Шешім толығымен өзіңізде.`}
+};
+
+/* ---------- simulated audit data ---------- */
+const FAIR = [
+  ['School type', [['Urban school',420,11,18,61],['Rural school',180,19,34,58]]],
+  ['Language of schooling', [['Kazakh-medium',260,14,22,63],['Russian-medium',340,12,20,60]]],
+  ['Paid work', [['Works 15+ h/week',90,21,31,44],['Does not work',510,11,19,63]]]
+];
+
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),2600);}
+
+function show(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  $('#v-'+v).classList.add('on');
+  const tabFor = v==='detail' ? 'dash' : v;
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-pressed', String(t.dataset.go===tabFor)));
+  if(v==='student') renderStudent();
+  if(v==='dash') renderDash();
+  if(v==='fair') renderFair();
+  window.scrollTo({top:0});
+}
+
+function renderDash(){
+  $('#c-red').textContent = students.filter(s=>s.status==='red').length;
+  $('#c-yellow').textContent = students.filter(s=>s.status==='yellow').length;
+  $('#c-all').textContent = students.length;
+  document.querySelectorAll('.stat').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.filter===state.filter)));
+  const list = students.filter(s=>state.filter==='all'||s.status===state.filter);
+  $('#rows').innerHTML = list.map(s=>`
+    <tr class="row">
+      <td class="who"><b>${esc(s.name)}</b><span class="small muted">${esc(s.group)}</span></td>
+      <td><span class="pill ${tone[s.status][1]}">${tone[s.status][0]}</span></td>
+      <td>${s.reasons.map(r=>esc(r[0])).join(' · ')}</td>
+      <td class="small ${state.sent[s.id]?'':'muted'}">${esc(state.sent[s.id]||'No action yet')}</td>
+      <td><button class="btn" data-open="${s.id}" aria-label="Review ${esc(s.name)}">Review</button></td>
+    </tr>`).join('');
+}
+
+function spark(vals){const m=Math.max(...vals,1);return '<span class="spark" aria-hidden="true">'+vals.map(v=>`<i style="height:${6+28*v/m}px"></i>`).join('')+'</span>';}
+
+function openStudent(id){
+  state.sel = students.find(s=>s.id===id); state.dec='';
+  const s = state.sel;
+  $('#det-name').textContent = s.name;
+  $('#det-group').textContent = s.group+' · first year · prefers '+LANG_NAMES[s.lang];
+  const p=$('#det-pill'); p.className='pill '+tone[s.status][1]; p.textContent=tone[s.status][0];
+  $('#det-reasons').innerHTML = s.reasons.map(r=>`<li><span>${esc(r[0])}<br><span class="small muted">last 6 weeks</span></span>${spark(r[1])}</li>`).join('');
+  $('#det-teacher').classList.toggle('hidden', !s.note);
+  $('#det-note').textContent = s.note;
+  $('#sent').classList.add('hidden');
+  const off = s.id==='s1' && state.optOut;
+  const oo=$('#optout');
+  oo.classList.toggle('hidden', !off);
+  oo.innerHTML = off ? `<b>${esc(s.first)} has turned off messages.</b> Respect this choice: messages and invitations are disabled. You can still log a decision, or talk in person at the next class.` : '';
+  document.querySelectorAll('[data-dec]').forEach(b=>{ b.disabled = off && b.dataset.dec!=='none'; });
+  setDecision('');
+  show('detail');
+}
+
+function template(){
+  const s=state.sel, L=$('#mlang').value, svc=SVC[L][$('#svc').value];
+  const f=TPL[L][state.dec];
+  return f ? f(L==='en' ? s.first : (CYR[s.first]||s.first), svc) : '';
+}
+
+function setDecision(d){
+  state.dec=d;
+  document.querySelectorAll('[data-dec]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.dec===d)));
+  const needsMsg = d==='message'||d==='meet'||d==='refer';
+  $('#svc-box').classList.toggle('hidden', d!=='refer');
+  $('#msg-box').classList.toggle('hidden', !needsMsg);
+  if(state.sel){
+    $('#mlang').value = state.sel.lang;
+    $('#mlang-hint').textContent = 'Default: the language '+state.sel.first+' uses in the app ('+LANG_NAMES[state.sel.lang]+').';
+  }
+  $('#msg').value = template();
+  const a=$('#approve'); a.classList.toggle('hidden', !d);
+  a.textContent = needsMsg ? 'Approve and send' : 'Confirm: no action';
+  $('#sent').classList.add('hidden');
+}
+
+function approve(){
+  const s=state.sel, d=state.dec, svcName=$('#svc').selectedOptions[0].textContent;
+  const label = {none:'Marked as false alarm',message:'Supportive message sent',meet:'Consultation invite sent',refer:'Referred: '+svcName}[d];
+  state.sent[s.id] = label+' · by advisor';
+  state.dec_log[s.id] = d;
+  const box=$('#sent');
+  if(d==='none'){
+    box.textContent='Logged as a false alarm. It feeds the trimester Fairness check, so the team can find errors in the indicator.';
+  } else {
+    state.msgs[s.id]=$('#msg').value;
+    box.innerHTML = esc(`Sent in ${LANG_NAMES[$('#mlang').value]} and logged under your name. ${s.first} decides whether to accept.`) + (s.id==='s1' ? ' <button class="link" data-go="student" style="padding:0;min-height:0">Open the Student app →</button>' : '');
+  }
+  box.classList.remove('hidden');
+  $('#approve').classList.add('hidden');
+  toast(label);
+}
+
+function renderStudent(){
+  const L = students[0].lang, t = T[L];
+  $('#screen').setAttribute('lang', L);
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===L)));
+  document.querySelectorAll('#screen [data-t]').forEach(el=>{ el.textContent = t[el.dataset.t]; });
+  $('#courses').innerHTML = t.courses.map((c,i)=>`
+    <div><div style="display:flex;justify-content:space-between" class="small"><b>${esc(c[0])}</b><span>${pct[i]}%</span></div>
+    <div class="bar" role="img" aria-label="${esc(c[0])} ${pct[i]}%"><i style="width:${pct[i]}%;background:${pct[i]<70?'#B45309':'#0B6A63'}"></i></div>
+    <div class="small muted">${esc(c[1])}</div></div>`).join('');
+  const m=state.msgs.s1, box=$('#s-msg');
+  if(m){box.className='msg small';box.textContent=m;}
+  else if(state.optOut){box.className='muted small';box.textContent=t.msgsOff;}
+  else {box.className='muted small';box.textContent=t.noMsg;}
+  $('#sw').setAttribute('aria-checked', String(!state.optOut));
+  $('#offers').innerHTML = offerKeys.map(k=>{
+    const o=t.offers[k], on=!!state.req[k];
+    return `<div class="offer"><div><b class="small">${esc(o[0])}</b><div class="small muted">${esc(o[1])}</div></div>
+      <button class="${on?'done':'btn'}" data-req="${k}" aria-pressed="${on}">${on?t.reqd:t.req}</button></div>`;
+  }).join('');
+}
+
+function renderFair(){
+  const row = (r, other) => {
+    const flagGap = Math.abs(r[2]-other[2])>10, faGap = Math.abs(r[3]-other[3])>10, accGap = Math.abs(r[4]-other[4])>10;
+    const worse = (a,b,higherIsWorse) => higherIsWorse ? a>b : a<b;
+    return `<tr><td>${esc(r[0])}</td><td class="num">${r[1]}</td>
+      <td class="num">${r[2]}%${flagGap&&worse(r[2],other[2],true)?'<span class="gap">gap</span>':''}</td>
+      <td class="num">${r[3]}%${faGap&&worse(r[3],other[3],true)?'<span class="gap">gap</span>':''}</td>
+      <td class="num">${r[4]}%${accGap&&worse(r[4],other[4],false)?'<span class="gap">gap</span>':''}</td></tr>`;
+  };
+  $('#fair-rows').innerHTML = FAIR.map(([g,[a,b]])=>`<tr class="grp"><td colspan="5">${esc(g)}</td></tr>${row(a,b)}${row(b,a)}`).join('');
+  const n = Object.keys(state.dec_log).length, fa = Object.values(state.dec_log).filter(d=>d==='none').length;
+  $('#fair-live').textContent = n
+    ? `This demo session: ${n} advisor decision${n>1?'s':''} logged, ${fa} marked as false alarm. In the pilot, these logs are what the audit is built on.`
+    : 'Every "false alarm" an advisor marks in the dashboard feeds this audit. Try marking one, then come back.';
+}
+
+document.addEventListener('click', e=>{
+  const t=e.target.closest('button'); if(!t || t.disabled) return;
+  if(t.dataset.go){ show(t.dataset.go); }
+  else if(t.dataset.filter){ state.filter=t.dataset.filter; renderDash(); }
+  else if(t.dataset.open){ openStudent(t.dataset.open); }
+  else if(t.dataset.dec!==undefined){ setDecision(t.dataset.dec); }
+  else if(t.id==='approve'){ approve(); }
+  else if(t.dataset.lang){ students[0].lang=t.dataset.lang; renderStudent(); }
+  else if(t.id==='sw'){ state.optOut=!state.optOut; renderStudent(); toast(state.optOut?T[students[0].lang].offToast:T[students[0].lang].onToast); }
+  else if(t.dataset.req){ const k=t.dataset.req; state.req[k]=!state.req[k]; renderStudent(); if(state.req[k]) toast(T[students[0].lang].reqToast); }
+});
+$('#svc').addEventListener('change', ()=>{ $('#msg').value=template(); });
+$('#mlang').addEventListener('change', ()=>{ $('#msg').value=template(); });
+
+renderDash();
+</script>
+</body>
+</html>
